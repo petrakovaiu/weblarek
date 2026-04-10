@@ -1,12 +1,5 @@
-import  { Api } from '../components/base/Api.ts';
-type PostData = {
-    payment: string,
-    email: string,
-    phone: string,
-    address: string,
-    total: number,
-    items: string[]
-}
+
+
 // type PostMethods = 'POST' | 'PUT' | 'DELETE';
 
 // export class Api {

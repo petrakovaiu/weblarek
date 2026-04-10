@@ -41,7 +41,7 @@ export class Comunication {
     constructor(
         apiData: IApi, buyerData: PostData) {
         this.apiData = apiData;
-        // this.buyerData? = buyerData;
+        // this.buyerData = buyerData;
     }
 
     getProduct(): Promise<GetData> { 

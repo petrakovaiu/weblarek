@@ -2,7 +2,7 @@ import './scss/styles.scss';
 import { Shop } from './types/Shop.ts';
 import { Cart } from './types/Cart.ts';
 import { Buyer } from './types/Buyer.ts';
-import { Comunication } from './types/Comunication.ts';
+// import { Comunication } from './types/Comunication.ts';
 
 import { IApi } from './types/index.ts';
 import { Comunication } from './types/index.ts';
