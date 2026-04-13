@@ -1,5 +1,7 @@
 import  { Api } from '../components/base/Api.ts';
 
+
+
 export type ApiPostMethods = 'POST' | 'PUT' | 'DELETE';
 
 export interface IApi {
@@ -38,8 +40,7 @@ export class Comunication {
     apiData: IApi;
     buyerData?: PostData;
 
-    constructor(
-        apiData: IApi, buyerData: PostData) {
+    constructor(apiData: IApi) {
         this.apiData = apiData;
         // this.buyerData = buyerData;
     }
