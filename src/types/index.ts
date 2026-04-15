@@ -1,7 +1,6 @@
 import  { Api } from '../components/base/Api.ts';
 
 
-
 export type ApiPostMethods = 'POST' | 'PUT' | 'DELETE';
 
 export interface IApi {
@@ -45,7 +44,7 @@ export class Comunication {
         // this.buyerData = buyerData;
     }
 
-    getProduct(): Promise<GetData> { 
+    getProduct(): Promise<IProduct[]> { 
         return this.apiData.get('/product/');
     }
 

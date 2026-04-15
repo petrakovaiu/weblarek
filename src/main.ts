@@ -11,17 +11,19 @@ import { Comunication } from './types/index.ts';
 
 import { apiProducts } from './utils/data.ts';
 
-//const productsModel = new Buyer();
-//productsModel.setItems(apiProducts.items);
+// const productsModel = new Shop();
+// productsModel.setItems(apiProducts.items)
+// console.log(productsModel);
 
 
 const apiInstance: IApi = new Api(API_URL)
 const comunicationInstance = new Comunication(apiInstance)
-
 const productsModel = new Shop();
-const response = comunicationInstance.getProduct().then(res: Promise<any>): [] => res.json();
-productsModel.setItems(response);
-//response.getItems()
 
+const res = comunicationInstance.getProduct()
+productsModel.setItems(await res);
 console.log('Массив товаров из корзины: ', productsModel.getItems())
+
+
+
 
