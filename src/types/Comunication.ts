@@ -1,44 +1,27 @@
+import  { IApi, IBuyer, IProduct } from './index.ts';
 
+type Total = number;
 
-// type PostMethods = 'POST' | 'PUT' | 'DELETE';
+interface ApiResponse {
+    items: IProduct[];
+    total: Total;
+}
 
-// export class Api {
-//     baseUrl: string;
-//     options: RequestInit;
+interface PostData extends IBuyer, ApiResponse {
+}
 
-//     constructor(baseUrl: string, options: RequestInit = {}){
-//         this.baseUrl = baseUrl;
-//         this.options = {
-//             headers: {
-//                 'Content-Type': 'application/json',
-//                 ...(options.headers as object ?? {})
-//             }
-//         };
-//     }
+export class Comunication {
+    api: IApi;
 
-//     handleResponse<T>(response: Response): Promise<T> {
-//         if (response.ok) return response.json();
-//         else return response.json();
-//             .then(data => Promise.reject(data.error ?? response.statusText));
-//     }
+    constructor(api: IApi) {
+        this.api = api;
+    }
 
-//     get<T extends object>(uri: string) {
-//         const response = fetch(`${this.baseUrl}${uri}`, { 
-//             ...this.options,
-//             method: 'GET'
-//         }).then(this.handleResponse<T>);
-//         return response;
-//     }
+    getProduct(uri: string): Promise<ApiResponse> { 
+        return this.api.get(uri);
+    }
 
-//     post<T extends object>(uri: string, data: object, method: PostMethods = 'POST') {
-//         const response = fetch(`${this.baseUrl}${uri}`, {
-//             ...this.options,
-//             method,
-//             body: JSON.stringify(data),
-//         }).then(this.handleResponse<T>);
-
-//         return response;
-//     }
-// }
-
-
+    postProduct(uri: string, byerData: PostData): Promise<IProduct> { 
+        return this.api.post<IProduct>(uri, byerData);
+    }
+}

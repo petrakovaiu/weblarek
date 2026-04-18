@@ -1,12 +1,15 @@
 import type { IProduct } from './index.ts';
 
-
-
 export class Shop {
-    items!: IProduct[];
-    itemId!: IProduct['id'];
-    currentItem!: IProduct;
-
+    private items: IProduct[] = [];
+    private item: IProduct = {
+        id: '',
+        description: '',
+        title: '',
+        image: '',
+        category: '',
+        price: null
+    };
 
     setItems(items: IProduct[]): void  {
         this.items = items;
@@ -16,16 +19,17 @@ export class Shop {
         return this.items;
     }
 
-    getItemById(itemId: IProduct['id']): void {
-        const products = this.items
-        // const item = products.find(el => el.id === itemId);
-        // return item ?? console.error('item does not exist')
+    getItemById(id: string): IProduct | undefined {
+        return this.items.find(product => product.id === id);
     }
 
-    // setCertainItem(certainItem): [] {
-    //     items = items[0];
-    // }
+    setSelectedItem(item: IProduct): void {
+        this.item = item;
+    }
 
+    getSelectedItem(): IProduct {
+        return this.item;
+    }
 }
 
 
