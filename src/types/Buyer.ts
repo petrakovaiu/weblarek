@@ -10,7 +10,7 @@ export class Buyer {
     };
     
     // Сохранение данных (один или несколько)
-    setData(newData: Partial<IBuyer>): void {
+    setData(newData: IBuyer): void {
         this.data = { ...this.data, ...newData}
     }
     
@@ -35,7 +35,7 @@ export class Buyer {
         return value !== undefined && value?.toString().trim() !== '';
     }
 
-    // Валидация всех данных'
+    // Валидация всех данных
     validateAll(): { [key in keyof IBuyer]: boolean } {
         const result: Partial<{ [key in keyof IBuyer]: boolean }> = {};
         for (const key in this.data) {

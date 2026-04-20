@@ -2,12 +2,12 @@ import  { IApi, IBuyer, IProduct } from './index.ts';
 
 type Total = number;
 
-interface ApiResponse {
+interface ProductApi {
     items: IProduct[];
     total: Total;
 }
 
-interface PostData extends IBuyer, ApiResponse {
+export interface PostData extends IBuyer, ProductApi {
 }
 
 export class Comunication {
@@ -17,7 +17,11 @@ export class Comunication {
         this.api = api;
     }
 
-    getProduct(uri: string): Promise<ApiResponse> { 
+    getProduct(uri: string): Promise<ProductApi> { 
+        return this.api.get(uri);
+    }
+
+    getSelectedProduct(uri: string): Promise<IProduct> { 
         return this.api.get(uri);
     }
 
