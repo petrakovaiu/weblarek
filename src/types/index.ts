@@ -7,6 +7,20 @@ export interface IApi {
 
 export type TPayment = 'card' | 'cash' | null;
 
+type Total = number;
+export interface ProductsApi{
+    items: IProduct[];
+    total: Total;
+}
+
+export interface PostData extends IBuyer {
+    total: Total;
+    items: string[]
+}
+
+//Тип для проверки для валидации
+export type isValid = string[] | boolean;
+
 //Товар:
 export interface IProduct {
 id: string;

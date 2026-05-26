@@ -1,4 +1,4 @@
-import type { IProduct } from './index.ts';
+import type { IProduct } from '../../types/index.ts';
 
 export class Shop {
     private items: IProduct[];
@@ -29,5 +29,3 @@ export class Shop {
         return this.item;
     }
 }
-
-
