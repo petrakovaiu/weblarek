@@ -1,8 +1,8 @@
-import type { IBuyer } from "../../types/index.ts";
+import type { BuyerData } from "../../types/index.ts";
 import type { isValid } from "../../types/index.ts";
 
 export class Buyer {
-    private data: IBuyer = {
+    _data: BuyerData = {
         payment: null,
         address: "",
         email: "",
@@ -10,18 +10,18 @@ export class Buyer {
     };
 
     // Сохранение данных (один или несколько)
-    setData(newData: IBuyer): void {
-        this.data = { ...this.data, ...newData };
+    setData(newData: BuyerData): void {
+        this._data = { ...this._data, ...newData };
     }
 
     // Получение всех данных
-    getData(): IBuyer {
-        return this.data;
+    getData(): BuyerData {
+        return this._data;
     }
 
     // Очистка данных
     clearData(): void {
-        this.data = {
+        this._data = {
             payment: null,
             address: "",
             email: "",
@@ -32,13 +32,13 @@ export class Buyer {
     // Валидация данных
     validate(): isValid {
         const validationRules: { [key: string]: string | true } = {
-            payment: (({ payment } = this.data) => {
-                if (payment !== "card" && payment !== "cash") { 
+            payment: (({ payment } = this._data) => {
+                if (payment !== "card" && payment !== "cash") {
                     return "Некорректный тип оплаты";
                 }
                 return true;
             })(),
-            address: (({ address } = this.data) => {
+            address: (({ address } = this._data) => {
                 if (address
                     .toString()
                     .trim()
@@ -47,13 +47,13 @@ export class Buyer {
                 }
                 return true;
             })(),
-            email: (({ email } = this.data) => {
+            email: (({ email } = this._data) => {
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 if (!email.trim()) return "Email не может быть пустым";
                 if (!emailRegex.test(email)) return "Введите корректный email";
                 return true;
             })(),
-            phone: (({ phone } = this.data) => {
+            phone: (({ phone } = this._data) => {
                 if (phone.length < 11)
                     return "Телефон должен содержать минимум 11 символов";
                 const phoneRegex =
@@ -62,13 +62,13 @@ export class Buyer {
                 return true;
             })(),
         };
-        function validateAll(validationRules: {[key: string]: string | true}): isValid {
+        function validateAll(validationRules: { [key: string]: string | true }): isValid {
             const errors: string[] = [];
             for (let key in validationRules) {
                 const result = validationRules[key];
                 if (result !== true) {
                     errors.push(result);
-                } 
+                }
             }
             return errors.length ? errors : true;
         }
