@@ -23,9 +23,6 @@ export interface PostData extends IBuyer {
     items: string[];
 }
 
-//Тип для проверки для валидации
-export type isValid = string[] | boolean;
-
 //Товар:
 export interface IProduct {
     id: string;
@@ -37,42 +34,11 @@ export interface IProduct {
 }
 
 //Покупатель:
-export interface BuyerData {
+export interface IBuyer {
     payment: TPayment | null;
     address: string;
     email: string;
     phone: string;
-}
-
-export interface IBuyer {
-    _data: BuyerData;
-    setData(newData: BuyerData): void;
-    getData(): BuyerData;
-    clearData(): void;
-    validate(): isValid;
-}
-
-//Корзина
-export interface ICart {
-    _itemsInCart: IProduct[];
-    getItems(): IProduct[];
-    addItem(item: IProduct): void;
-    removeItem(itemId: string): void;
-    clearCart(): void;
-    getTotalCost(): number;
-    getCount(): number;
-    hasProduct(itemId: string): boolean;
-}
-
-//Каталог товаров
-export interface IShop {
-    _items: IProduct[];
-    _item: IProduct | null;
-    setItems(items: IProduct[]): void;
-    getItems(): IProduct[];
-    getItemById(id: string): IProduct | undefined;
-    setSelectedItem(_item: IProduct): void;
-    getSelectedItem(): IProduct | null;
 }
 
 export interface IComunication {

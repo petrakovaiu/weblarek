@@ -1,28 +1,27 @@
 import type { IProduct } from '../../types/index.ts';
-import type { IShop } from '../../types/index.ts';
 
-export class Shop implements IShop {
-    _items: IProduct[] = [];
-    _item: IProduct | null = null;
+export class Shop {
+    private items: IProduct[] = [];
+    private item: IProduct | null = null;
 
     //Созранение всех товаров в магазине
     setItems(items: IProduct[]): void {
-        this._items = items;
+        this.items = items;
     }
     //Получение всех товаров в магазине
     getItems(): IProduct[] {
-        return this._items;
+        return this.items;
     }
     //Найти товар по ID
     getItemById(id: string): IProduct | undefined {
-        return this._items.find(product => product.id === id);
+        return this.items.find(product => product.id === id);
     }
     //Cохранение товара для подробного отображения;
-    setSelectedItem(_item: IProduct): void {
-        this._item = _item;
+    setSelectedItem(item: IProduct): void {
+        this.item = item;
     }
     //получение товара для подробного отображения.
     getSelectedItem(): IProduct | null {
-        return this._item;
+        return this.item;
     }
 }

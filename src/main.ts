@@ -3,11 +3,9 @@ import { Shop } from './components/models/Shop.ts';
 import { Cart } from './components/models/Cart.ts';
 import { Buyer } from './components/models/Buyer.ts';
 import { API_URL } from './utils/constants.ts';
-
 import { IApi } from './types/index.ts';
 import { Api } from './components/base/Api.ts';
 import { Comunication } from './components/comunicationLayer/Comunication.ts';
-
 import { apiProducts } from './utils/data.ts';
 
 const buyer = new Buyer();
@@ -21,10 +19,10 @@ buyer.setData({
     email: 'test@test.com',
     phone: '+71234567890'
 });
-console.log('Валидация покупателя:', buyer.validate());
 console.log('Получить объект покупателя', buyer.getData())
 buyer.clearData()
 console.log('Получить объект покупателя - проверка очистки данных', buyer.getData())
+console.log('Валидация покупателя:', buyer.validate());
 
 // Получение товара из моковых данных
 const item1 = apiProducts.items[0];
@@ -47,7 +45,7 @@ console.log('Все товары в корзине:', cart.getItems())
 // Очистка корзины
 cart.clearCart()
 // Пустая корзина
-console.log('Все товары в корзине:', cart.getItems())
+console.log('Все товары в корзине - после очистки:', cart.getItems())
 
 //Методы для каталога товаров
 const data = apiProducts.items;
