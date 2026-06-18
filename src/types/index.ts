@@ -33,6 +33,8 @@ export interface IProduct {
     price: number | null;
 }
 
+export type TBuyerErrors = Partial<Record<keyof IBuyer, string>>; 
+
 //Покупатель:
 export interface IBuyer {
     payment: TPayment | null;
