@@ -122,8 +122,8 @@ price: number | null;
 
 Покупатель:
 interface IBuyer {
-paynent: TPayment;
-//'card' | 'cash' | null
+payment: TPayment;
+'card' | 'cash' | null
 address: string,
 email: string,
 phone: string.
@@ -195,4 +195,88 @@ phone: string.
 
 Методы класса:
 `getProducts(): Promise<ProductsApi>` - Нужен для get запроса на эндпоинт /product/ и возвращает объект, полученный от сервера, в котором находится массив товаров
-`postProduct(uri: string, byerData: PostData): Promise<IProduct>` - Метод делает post запрос на эндпоинт /order/ и передаёт в него данные, полученные в параметрах метода, а возвращает объект, подтверждающий покупку на определенную сумму
+`postProduct(uri: string, byerData: PostData): Promise<IProduct>` - Метод делает post запрос на эндпоинт /order/ и передаёт в него данные, полученные в параметрах метода, а возвращает объект, подтверждающий покупку на определенную сумму.
+
+###### Слой представления
+
+Шапка:
+
+<!-- Интерфейс `HeaderData`
+поля:
+`basketButton: HTMLButtonElement` - кнопка корзина;
+`counter: number` - счетчик количества товаров в корзине. -->
+
+`export class Header`
+`private basketButton: HTMLButtonElement`- элемент с кнопкой корзины
+`private counterElement: HTMLElement` - элемент, где отображается счетчик корзины
+`set counter (value: number)` - метод принимает и сохраняет значение счетчика корзины
+
+`export class Gallery`
+`private catalogElement: HTMLElement[]` - карточки в галлерее
+`set catalog (items: HTMLElement[])` - принимает массив карточек
+
+`export class Modal`
+`private contentElement: HTMLElement` - содержимое модального окна
+`private modalButton: HTMLButtonElement`- кнопка модального окна
+`set content (content: HTMLElement)` - метод принимает контент модалки
+
+`export class Success`
+`private totalCostElement: HTMLElement` - контент с подтверждением покупки и кол-вом списанных синапсов
+`private acceptButton: HTMLButtonElement`- кнопка "принять"
+`set totalCost (value: number)` - метод принимает контент количество списанных синапсов
+
+`export class Basket`
+`private isEmptyElement?: HTMLParagraphElement` - поле для контента внутри корзины по умолчанию (пустая корзина)
+`private cardList: HTMLLIElement[]` - список карточек
+`private basketButton: HTMLButtonElement`- кнопка "оформить"
+`private totalCostElement: HTMLParagraphElement` - кол-во списанных синапсов
+`set totalCost (value: number)` - метод принимает контент количество списанных синапсов
+`set content (iems: HTMLLIElement[])` - метод принимает список карточек
+
+`export absctract class Card` Является базовым классом для всех компонентов карточек в приложении
+`private titleElement: HTMLSpanElement`- название товара
+`private priceElement: HTMLSpanElement` - кол-во списанных синапсов
+`set title (title: string)` - метод принимает строку название товара
+`set price (value: TPayment)` - метод принимает числовое значение, цену
+
+`export class CardBasket` Элемент списка для корзины
+`private indexElement: HTMLSpanElement` - порядковый номер
+`private totalCostElement: HTMLSpanElement` - итоговая стоимость товаров в корзине
+`private deleteButton: HTMLButtonElement` - удалить товар из корзины
+`set index (value: number)` - метод принимает индекс товара
+`set totalCost (value: number)` - метож принимает итоговая стоимость товаров в корзине
+
+`export class CardCatalog` Элемент списка для каталога
+`private categoryElement: HTMLSpanElement` - категория
+`private imageElement: HTMLImgElement` - изображение товара
+`set category (category: string)` - метод принимает индекс товара
+`set image (url: string)` - метод принимает ссылку на изображение товара
+
+`export class CardPreview` Превью карточки
+`private categoryElement: HTMLSpanElement` - категория
+`private imageElement: HTMLImgElement` - изображение товара
+`private descriptionElement: HTMLSpanElement` - описание товара
+`private addDeleteButton: HTMLButtonElement` - добавить/удалить товар из корзины toggleButton
+`set category (category: string)` - метод принимает индекс товара
+`set image (url: string)` - метод принимает ссылку на изображение товара
+`set description (url: string)` - метод принимает описание товара
+
+`export abstract class Form` Является базовым классом для форм приложения
+`private errorsElement?: HTMLSpanElement` - ошибки, возникающие в форме, опциональное поле
+`set errors (url: string)` - метод принимает описание товара и добавляет ошибку в `<span>`, если есть
+
+`export class FormOrder` форма заказа
+`private paymentElement: HTMLButtonElement[]` - кнопки для оплаты
+`private addressElement: HTMLInputElement` - адрес доставки
+`private forwardButton: HTMLButtonElement` - кнопка "далее", доступна после корректного заполнения формы
+`set payment (value: TPayment)` - метод принимает вид оплаты, выбранный пользователем
+`set address (value: string)` - метод принимает строку с адресом
+
+`export class FormOrder` форма контактов
+`private emailElement: HTMLInputElement` - почта пользователя
+`private phoneElement: HTMLInputElement` - телефон
+`private submitButton: HTMLButtonElement` - кнопка подтверждения заказа, доступна после корректного заполнения формы
+`set email (value: string)` - метод принимает электронную почту
+`set phone (value: string)` - метод принимает номер телефона
+
+###### События

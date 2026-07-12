@@ -7,6 +7,7 @@ import { IApi } from "./types/index.ts";
 import { Api } from "./components/base/Api.ts";
 import { Comunication } from "./components/comunicationLayer/Comunication.ts";
 import { apiProducts } from "./utils/data.ts";
+import { Header } from "./components/views/Header/Header.ts";
 
 const buyer = new Buyer();
 const cart = new Cart();
@@ -79,3 +80,14 @@ let res = comunicationInstance
   .catch((error) => {
     console.error("Ошибка получения товаров:", error);
   });
+
+//проверка слоя Отоббражения
+
+//добавляем товары в корзину на проверку
+cart.addItem(item1);
+cart.addItem(item2);
+
+//запрашиваем изменение View
+const container = document.querySelector(".gallery");
+const header = new Header(cart.getItems().length, "counterUpdated");
+container?.replaceChildren(header.render());
