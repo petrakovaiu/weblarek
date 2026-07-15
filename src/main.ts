@@ -8,6 +8,8 @@ import { Api } from "./components/base/Api.ts";
 import { Comunication } from "./components/comunicationLayer/Comunication.ts";
 import { apiProducts } from "./utils/data.ts";
 import { Header } from "./components/views/Header/Header.ts";
+import type { IHeader } from "./types/index.ts";
+import { EventEmitter } from "./components/base/Events.ts";
 
 const buyer = new Buyer();
 const cart = new Cart();
@@ -39,7 +41,7 @@ console.log("Все товары в корзине:", cart.getItems());
 // Общая стоимость корзины
 console.log("Cтоимость корзины:", cart.getTotalCost());
 //Количество товаров
-console.log("Количество getCount():", cart.getTotalCost());
+console.log("Количество getCount():", cart.getCount());
 // Проверка наличия товара по id
 console.log(
   "Найденный товар",
@@ -83,11 +85,28 @@ let res = comunicationInstance
 
 //проверка слоя Отоббражения
 
-//добавляем товары в корзину на проверку
+// Проверка слоя Отображения
+// Добавляем товары в корзину
 cart.addItem(item1);
 cart.addItem(item2);
 
-//запрашиваем изменение View
+const events = new EventEmitter();
 const container = document.querySelector(".gallery");
-const header = new Header(cart.getItems().length, "counterUpdated");
-container?.replaceChildren(header.render());
+
+const component = new Header(
+  container as HTMLElement,
+  {
+    counterSubscriber: () =>
+      events.emit<IHeader>("counterUpdated", { counter: 2 }),
+  }, // Передаем events
+);
+
+if (container) {
+  component.render(
+    events.on("counterUpdated", (counter: 2) => {
+      component;
+    }),
+  );
+}
+
+//Презентер
