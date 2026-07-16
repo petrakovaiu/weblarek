@@ -87,11 +87,11 @@ let res = comunicationInstance
 
 //проверка слоя Отоббражения
 
-Добавляем товары в корзину
-test-header.ts
-============================================
-ПОДХОД 1: С сеттером
-============================================
+// Добавляем товары в корзину
+// test-header.ts
+// ============================================
+// ПОДХОД 1: С сеттером
+// ============================================
 console.log("🧪 ПОДХОД 1: С сеттером");
 
 const container1 = document.createElement("header");
@@ -102,13 +102,12 @@ container1.innerHTML = `
 const events1 = new EventEmitter();
 const header1 = new Header(container1, events1);
 
-header1.render({ counter: 15 });
+// header1.render({ counter: 15 });
 
-Презентер (зайчатки):
+//Презентер (зайчатки):
 
 events.on("cart:changed", (data: { count: number }) => {
-  console.log("🛒 СОБЫТИЕ cart:changed ПРОИЗОШЛО!");
-  console.log("   Товаров в корзине:", data.count);
+  header1.render({ counter: data.count });
 });
 
 cart.addItem(item1);
