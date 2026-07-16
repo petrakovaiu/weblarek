@@ -3,27 +3,46 @@ import { Component } from "../../base/Component.ts";
 import type { EmitterEvent } from "../../base/Events.ts";
 import { EventEmitter } from "../../base/Events.ts";
 
-export class Header extends Component<IHeader> {
-  private basketButton: HTMLButtonElement;
-  private counterElement: HTMLSpanElement;
+export class Header extends Component<IHeader> implements IHeader {
+  // ✅ Поле из интерфейса
+  counter: number = 0;
 
-  private counterSubscriber: { counterSubscriber: () => void };
-  constructor(
-    private container: HTMLElement,
-    counterSubscriber: { counterSubscriber: () => void },
-    // events: EventEmitter,
-  ) {
+  private basketButton: HTMLButtonElement | null = null;
+  private counterElement: HTMLSpanElement | null = null;
+  private events: EventEmitter;
+
+  constructor(container: HTMLElement, events: EventEmitter) {
     super(container);
-    // this.events = events;
-    this.basketButton = document.querySelector(
-      ".header__basket",
-    ) as HTMLButtonElement;
-    this.counterElement = document.querySelector(
-      ".header__basket-counter",
-    ) as HTMLSpanElement;
-
+    this.events = events;
+    this.initializeElements();
+    this.setupEventListeners();
     this.updateCounterDisplay();
-    // this.setupEventListeners();
+  }
+
+  private initializeElements(): void {
+    this.basketButton = document.querySelector(".header__basket");
+    this.counterElement = document.querySelector(".header__basket-counter");
+
+    if (!this.counterElement) {
+      this.counterElement = document.createElement("span");
+      this.counterElement.className = "header__basket-counter";
+      this.container.appendChild(this.counterElement);
+    }
+  }
+
+  // ✅ Метод для обновления (вместо сеттера)
+  updateCounter(value: number): void {
+    const oldValue = this.counter;
+    this.counter = Math.max(0, value);
+
+    if (this.counterElement) {
+      this.counterElement.textContent = String(this.counter);
+    }
+
+    this.events.emit("counterChanged", {
+      old: oldValue,
+      new: this.counter,
+    });
   }
 
   private updateCounterDisplay(): void {
@@ -32,65 +51,21 @@ export class Header extends Component<IHeader> {
     }
   }
 
-  private set counter(value: number) {
-    this.counterElement.textContent = String(value);
+  private setupEventListeners(): void {
+    this.events.on("counterUpdated", (data: { value: number }) => {
+      this.updateCounter(data.value);
+    });
+
+    this.events.on("resetCounter", () => {
+      this.updateCounter(0);
+    });
   }
 
   render(data?: Partial<IHeader>): HTMLElement {
-    const container = super.render(data);
-    !data?.counter ? (this.counter = 0) : (this.counter = data.counter);
-    return container;
+    super.render(data);
+    if (data?.counter !== undefined) {
+      this.updateCounter(data.counter);
+    }
+    return this.container;
   }
 }
-
-// export class Header extends Component<IHeader> {
-//   private basketButton: HTMLButtonElement;
-//   private counterElement: HTMLSpanElement;
-//   private events: EventEmitter;
-//   // private counter: number;
-
-//   constructor(
-//     container: HTMLElement,
-//     private cardSubscriber: { cardSubscriber: () => void },
-//     events: EventEmitter, // Добавляем events как 3-й параметр
-//   ) {
-//     super(container);
-//     this.events = events;
-//     // this.counter = counter;
-//     this.basketButton = document.querySelector(
-//       ".header__basket",
-//     ) as HTMLButtonElement;
-//     this.counterElement = document.querySelector(
-//       ".header__basket-counter",
-//     ) as HTMLSpanElement;
-
-//     this.updateCounterDisplay();
-//     this.setupEventListeners();
-//   }
-
-//   private setupEventListeners(): void {
-//     this.events.on("counterUpdated", (data: { counter: number }) => {
-//       this.counter = data.counter;
-//     });
-
-//     this.events.on("resetCounter", () => {
-//       this.counter = 0;
-//     });
-//   }
-
-//   private updateCounterDisplay(): void {
-//     if (this.counterElement) {
-//       this.counterElement.textContent = String(this.counter);
-//     }
-//   }
-
-//   private set counter(value: number) {
-//     this.counterElement.textContent = String(value);
-//   }
-
-//   render(data?: Partial<IHeader>): HTMLElement {
-//     const container = super.render(data);
-//     this.counter = data?.counter ?? 0;
-//     return container;
-//   }
-// }

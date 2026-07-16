@@ -11,8 +11,10 @@ import { Header } from "./components/views/Header/Header.ts";
 import type { IHeader } from "./types/index.ts";
 import { EventEmitter } from "./components/base/Events.ts";
 
+const events = new EventEmitter();
+
 const buyer = new Buyer();
-const cart = new Cart();
+const cart = new Cart(events);
 const productsModel = new Shop();
 
 //Проверка модуля покупателя
@@ -85,28 +87,29 @@ let res = comunicationInstance
 
 //проверка слоя Отоббражения
 
-// Проверка слоя Отображения
-// Добавляем товары в корзину
+Добавляем товары в корзину
+test-header.ts
+============================================
+ПОДХОД 1: С сеттером
+============================================
+console.log("🧪 ПОДХОД 1: С сеттером");
+
+const container1 = document.createElement("header");
+container1.innerHTML = `
+    <button class="header__basket">Корзина</button>
+    <span class="header__basket-counter">0</span>
+`;
+const events1 = new EventEmitter();
+const header1 = new Header(container1, events1);
+
+header1.render({ counter: 15 });
+
+Презентер (зайчатки):
+
+events.on("cart:changed", (data: { count: number }) => {
+  console.log("🛒 СОБЫТИЕ cart:changed ПРОИЗОШЛО!");
+  console.log("   Товаров в корзине:", data.count);
+});
+
 cart.addItem(item1);
 cart.addItem(item2);
-
-const events = new EventEmitter();
-const container = document.querySelector(".gallery");
-
-const component = new Header(
-  container as HTMLElement,
-  {
-    counterSubscriber: () =>
-      events.emit<IHeader>("counterUpdated", { counter: 2 }),
-  }, // Передаем events
-);
-
-if (container) {
-  component.render(
-    events.on("counterUpdated", (counter: 2) => {
-      component;
-    }),
-  );
-}
-
-//Презентер
