@@ -7,8 +7,8 @@ import { IApi } from "./types/index.ts";
 import { Api } from "./components/base/Api.ts";
 import { Comunication } from "./components/comunicationLayer/Comunication.ts";
 import { apiProducts } from "./utils/data.ts";
-import { Header } from "./components/views/Header/Header.ts";
-import type { IHeader } from "./types/index.ts";
+import { Header } from "./components/views/Header.ts";
+// import type { IHeader } from "./types/index.ts";
 import { EventEmitter } from "./components/base/Events.ts";
 
 const events = new EventEmitter();
@@ -94,21 +94,64 @@ let res = comunicationInstance
 // ============================================
 console.log("🧪 ПОДХОД 1: С сеттером");
 
-const container1 = document.createElement("header");
-container1.innerHTML = `
-    <button class="header__basket">Корзина</button>
-    <span class="header__basket-counter">0</span>
-`;
-const events1 = new EventEmitter();
-const header1 = new Header(container1, events1);
+const container1 = document.querySelector(".header")!;
+// document.createElement("header");
+// container1.innerHTML =
+// // `<button class="header__basket">Корзина</button>
+// //     <span class="header__basket-counter">0</span>
+// // `;
 
-// header1.render({ counter: 15 });
+const header = new Header(container1, events);
 
 //Презентер (зайчатки):
 
-events.on("cart:changed", (data: { count: number }) => {
-  header1.render({ counter: data.count });
-});
+// Инициализация - используем render
 
-cart.addItem(item1);
-cart.addItem(item2);
+// // Частое обновление только счетчика - используем update
+// events.on("cart:changed", (data: { counter: number }) => {
+//   header.update({ counter: data.counter }); // Быстро и эффективно
+// });
+
+export function cartPresenter(
+  cart: Cart,
+  header: Header,
+  events: EventEmitter,
+): void {
+  // Обновление счетчика корзины
+  const updateCounter = () => {
+    header.counter = cart.getCount();
+  };
+
+  // Добавление товара в корзину
+  events.on("cart:change", (item) => {
+    cart.addItem(item);
+    updateCounter();
+  });
+
+  // Удаление товара
+  events.on("cart:remove", (id: string) => {
+    cart.removeItem(id);
+    updateCounter();
+  });
+
+  // Очистка корзины
+  events.on("cart:clear", () => {
+    cart.clearCart();
+    updateCounter();
+  });
+
+  // Открытие корзины
+  events.on("basket:open", () => {
+    const items = cart.getItems();
+
+    events.emit("cart:render", {
+      items,
+      total: cart.getTotalCost(),
+    });
+  });
+
+  // Первичная установка счетчика
+  updateCounter();
+}
+
+cartPresenter(cart, header, events);

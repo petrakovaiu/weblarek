@@ -230,7 +230,7 @@ phone: string.
 `private cardList: HTMLLIElement[]` - список карточек
 `private basketButton: HTMLButtonElement`- кнопка "оформить"
 `private totalCostElement: HTMLParagraphElement` - кол-во списанных синапсов
-`set totalCost (value: number)` - метод принимает контент количество списанных синапсов
+`set totalCost (value: number)` - метод принимает контент количество списываемых синапсов
 `set content (iems: HTMLLIElement[])` - метод принимает список карточек
 
 `export absctract class Card` Является базовым классом для всех компонентов карточек в приложении
@@ -242,7 +242,6 @@ phone: string.
 `export class CardBasket` Элемент списка для корзины
 `private indexElement: HTMLSpanElement` - порядковый номер
 `private totalCostElement: HTMLSpanElement` - итоговая стоимость товаров в корзине
-`private deleteButton: HTMLButtonElement` - удалить товар из корзины
 `set index (value: number)` - метод принимает индекс товара
 `set totalCost (value: number)` - метож принимает итоговая стоимость товаров в корзине
 

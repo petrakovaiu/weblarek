@@ -56,3 +56,50 @@ export interface IComunication {
 export interface IHeader {
   counter: number;
 }
+
+export interface IGallery {
+  catalog: HTMLElement[];
+}
+
+export interface IModal {
+  content: HTMLElement;
+}
+
+export interface ISuccess {
+  content: HTMLElement;
+}
+
+export interface IBasket {
+  counter: number;
+  isEmpty: boolean;
+}
+
+export interface ICard {
+  title: string;
+  price: string;
+}
+
+export interface ICardBasket {
+  counter: number;
+}
+
+export interface ICardGallery {
+  category: string;
+  image: string;
+}
+
+export interface ICardPreview {
+  category: string;
+  image: string;
+  description: string;
+}
+
+export interface IForm {
+  errors: string;
+}
+
+export interface IFormOrder<T extends Partial<Record<keyof IBuyer, string>>> {}
+
+export interface IFormContacts<
+  T extends Partial<Record<keyof IBuyer, string>>,
+> {}
