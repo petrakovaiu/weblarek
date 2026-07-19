@@ -1,32 +1,32 @@
-import { ISuccess } from "../../types/index.ts";
-import { Component } from "../base/Component.ts";
-import type { IEvents } from "../base/Events.ts";
+import { Component } from "../base/Component";
+import type { IEvents } from "../base/Events";
 
-import { ensureElement } from "../../utils/utils.ts";
+export interface ISuccess {
+  description: string;
+}
 
-export class Modal extends Component<ISuccess> {
-  private events: IEvents;
-  private totalCostElement: HTMLElement;
-  private acceptButton: HTMLButtonElement;
+export class Success extends Component<ISuccess> {
+  private descriptionElement: HTMLElement;
+  private closeButton: HTMLButtonElement;
 
-  constructor(container: HTMLElement, events: IEvents) {
+  constructor(
+    container: HTMLElement,
+    private events: IEvents,
+  ) {
     super(container);
-    this.events = events;
-    this.totalCostElement = ensureElement<HTMLButtonElement>(
+
+    this.descriptionElement = container.querySelector(
       ".order-success__description",
-      this.container,
-    );
-    this.acceptButton = ensureElement<HTMLButtonElement>(
-      ".button order-success__close",
-      this.container,
-    );
-    this.acceptButton.addEventListener("click", () => {
-      this.events.emit("modal:close");
+    )!;
+
+    this.closeButton = container.querySelector(".order-success__close")!;
+
+    this.closeButton.addEventListener("click", () => {
+      this.events.emit("success:close");
     });
   }
-  set totalCost(value: number) {
-    if (this.totalCostElement) {
-      this.totalCostElement.textContent = `Списано ${value} синапсов`;
-    }
+
+  set description(value: string) {
+    this.descriptionElement.textContent = value;
   }
 }

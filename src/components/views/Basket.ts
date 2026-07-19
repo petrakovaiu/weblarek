@@ -1,40 +1,34 @@
-import { IBasket } from "../../types/index.ts";
-import { Component } from "../base/Component.ts";
-import type { IEvents } from "../base/Events.ts";
-import { createElement } from "../../utils/utils.ts";
-import { ensureElement } from "../../utils/utils.ts";
-import { cloneTemplate } from "../../utils/utils.ts";
-import { ICardBasket } from "../../types/index.ts";
+import { Component } from "../base/Component";
+import type { IBasket } from "../../types";
+import type { IEvents } from "../base/Events";
 
 export class Basket extends Component<IBasket> {
-  private events: IEvents;
-  private isEmptyElement?: HTMLParagraphElement;
-  private cardList: HTMLElement[];
-  private basketButton: HTMLButtonElement;
-  private totalCostElement: HTMLParagraphElement;
+  private listElement: HTMLElement;
+  private priceElement: HTMLElement;
+  private buttonElement: HTMLButtonElement;
 
-  constructor(container: HTMLElement, card: ICardBasket, events: IEvents) {
+  constructor(
+    container: HTMLElement,
+    private events: IEvents,
+  ) {
     super(container);
-    this.events = events;
-    this.isEmptyElement = createElement<HTMLParagraphElement>("p");
-    this.cardList = container.appendChild(
-      cloneTemplate(createElement("li", card)),
-    );
-    this.basketButton = ensureElement<HTMLButtonElement>(
-      ".button basket__button",
-      this.container,
-    );
-    this.basketButton.addEventListener("click", () => {
-      this.events.emit("modal:buy");
+
+    this.listElement = container.querySelector(".basket__list")!;
+
+    this.priceElement = container.querySelector(".basket__price")!;
+
+    this.buttonElement = container.querySelector(".basket__button")!;
+
+    this.buttonElement.addEventListener("click", () => {
+      this.events.emit("order:open");
     });
   }
-  set totalCost(value: number) {
-    if (this.totalCostElement) {
-      this.totalCostElement.textContent = `Списано ${value} синапсов`;
-    }
+
+  set items(items: HTMLElement[]) {
+    this.listElement.replaceChildren(...items);
   }
 
-  set isEmpty(content: string) {}
-
-  set totalCost(value: number) {}
+  set price(value: number) {
+    this.priceElement.textContent = `${value} синапсов`;
+  }
 }

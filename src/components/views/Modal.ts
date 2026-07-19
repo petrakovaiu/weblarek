@@ -1,26 +1,34 @@
-import { IModal } from "../../types/index.ts";
-import { Component } from "../base/Component.ts";
-import type { IEvents } from "../base/Events.ts";
+import { Component } from "../base/Component";
 
-import { ensureElement } from "../../utils/utils.ts";
+export interface IModal {
+  content: HTMLElement;
+}
 
 export class Modal extends Component<IModal> {
-  events: IEvents;
+  private closeButton: HTMLButtonElement;
   private contentElement: HTMLElement;
-  private modalButton: HTMLButtonElement;
-  constructor(container: HTMLElement, events: IEvents) {
+
+  constructor(container: HTMLElement) {
     super(container);
-    this.events = events;
-    this.contentElement = this.content;
-    this.modalButton = ensureElement<HTMLButtonElement>(
-      ".modal__close",
-      this.container,
-    );
-    this.modalButton.addEventListener("click", () => {
-      this.events.emit("modal:close");
+
+    this.closeButton = container.querySelector(".modal__close")!;
+
+    this.contentElement = container.querySelector(".modal__content")!;
+
+    this.closeButton.addEventListener("click", () => {
+      this.close();
     });
   }
-  set content(content: HTMLElement) {
-    this.contentElement.appendChild(content);
+
+  open() {
+    this.container.classList.add("modal_active");
+  }
+
+  close() {
+    this.container.classList.remove("modal_active");
+  }
+
+  set content(value: HTMLElement) {
+    this.contentElement.replaceChildren(value);
   }
 }

@@ -1,27 +1,22 @@
-import type { IProduct } from '../../types/index.ts';
+import type { IProduct } from "../../types";
+import type { IEvents } from "../../components/base/Events";
 
 export class Shop {
-    private items: IProduct[] = [];
-    private item: IProduct | null = null;
+  private items: IProduct[] = [];
 
-    //Созранение всех товаров в магазине
-    setItems(items: IProduct[]): void {
-        this.items = items;
-    }
-    //Получение всех товаров в магазине
-    getItems(): IProduct[] {
-        return this.items;
-    }
-    //Найти товар по ID
-    getItemById(id: string): IProduct | undefined {
-        return this.items.find(product => product.id === id);
-    }
-    //Cохранение товара для подробного отображения;
-    setSelectedItem(item: IProduct): void {
-        this.item = item;
-    }
-    //получение товара для подробного отображения.
-    getSelectedItem(): IProduct | null {
-        return this.item;
-    }
+  constructor(private events: IEvents) {}
+
+  setItems(items: IProduct[]) {
+    this.items = items;
+
+    this.events.emit("catalog:changed");
+  }
+
+  getItems() {
+    return [...this.items];
+  }
+
+  getProduct(id: string) {
+    return this.items.find((item) => item.id === id);
+  }
 }
