@@ -1,30 +1,37 @@
 import { Component } from "../base/Component";
+import type { IModal } from "../../types";
+import { ensureElement } from "../../utils/utils";
 
-export interface IModal {
-  content: HTMLElement;
-}
+type ModalActions = {
+  onClose: () => void;
+};
 
 export class Modal extends Component<IModal> {
-  private closeButton: HTMLButtonElement;
-  private contentElement: HTMLElement;
+  private readonly closeButton: HTMLButtonElement;
+  private readonly contentElement: HTMLElement;
 
-  constructor(container: HTMLElement) {
+  constructor(container: HTMLElement, actions: ModalActions) {
     super(container);
+    this.closeButton = ensureElement<HTMLButtonElement>(
+      ".modal__close",
+      container,
+    );
+    this.contentElement = ensureElement<HTMLElement>(
+      ".modal__content",
+      container,
+    );
 
-    this.closeButton = container.querySelector(".modal__close")!;
-
-    this.contentElement = container.querySelector(".modal__content")!;
-
-    this.closeButton.addEventListener("click", () => {
-      this.close();
+    this.closeButton.addEventListener("click", actions.onClose);
+    this.container.addEventListener("click", (event) => {
+      if (event.target === this.container) actions.onClose();
     });
   }
 
-  open() {
+  open(): void {
     this.container.classList.add("modal_active");
   }
 
-  close() {
+  close(): void {
     this.container.classList.remove("modal_active");
   }
 

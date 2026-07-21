@@ -1,32 +1,28 @@
 import { Component } from "../base/Component";
+import type { ISuccess } from "../../types";
 import type { IEvents } from "../base/Events";
-
-export interface ISuccess {
-  description: string;
-}
+import { ensureElement } from "../../utils/utils";
 
 export class Success extends Component<ISuccess> {
-  private descriptionElement: HTMLElement;
-  private closeButton: HTMLButtonElement;
+  private readonly descriptionElement: HTMLElement;
+  private readonly closeButton: HTMLButtonElement;
 
-  constructor(
-    container: HTMLElement,
-    private events: IEvents,
-  ) {
+  constructor(container: HTMLElement, events: IEvents) {
     super(container);
-
-    this.descriptionElement = container.querySelector(
+    this.descriptionElement = ensureElement<HTMLElement>(
       ".order-success__description",
-    )!;
-
-    this.closeButton = container.querySelector(".order-success__close")!;
-
-    this.closeButton.addEventListener("click", () => {
-      this.events.emit("success:close");
-    });
+      container,
+    );
+    this.closeButton = ensureElement<HTMLButtonElement>(
+      ".order-success__close",
+      container,
+    );
+    this.closeButton.addEventListener("click", () =>
+      events.emit("success:close"),
+    );
   }
 
-  set description(value: string) {
-    this.descriptionElement.textContent = value;
+  set total(value: number) {
+    this.descriptionElement.textContent = `Списано ${value} синапсов`;
   }
 }

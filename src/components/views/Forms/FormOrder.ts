@@ -1,42 +1,44 @@
 import { Form } from "./Form";
-import type { IFormOrder } from "../../../types";
-import type { IEvents } from "../../../components/base/Events";
+import type { IFormOrder, TPayment } from "../../../types";
+import type { IEvents } from "../../base/Events";
+import { ensureElement } from "../../../utils/utils";
 
 export class FormOrder extends Form<IFormOrder> {
-  private paymentButtons: HTMLButtonElement[];
-  private addressInput: HTMLInputElement;
+  private readonly paymentButtons: HTMLButtonElement[];
+  private readonly addressInput: HTMLInputElement;
 
-  constructor(
-    container: HTMLElement,
-    private events: IEvents,
-  ) {
-    super(container);
+  constructor(container: HTMLFormElement, events: IEvents) {
+    super(container, () => events.emit("order:submit"));
 
-    this.paymentButtons = Array.from(container.querySelectorAll(".button_alt"));
-
-    this.addressInput = container.querySelector("input[name='address']")!;
+    this.paymentButtons = Array.from(
+      container.querySelectorAll<HTMLButtonElement>(".button_alt"),
+    );
+    this.addressInput = ensureElement<HTMLInputElement>(
+      "input[name='address']",
+      container,
+    );
 
     this.paymentButtons.forEach((button) => {
       button.addEventListener("click", () => {
-        this.paymentButtons.forEach((item) =>
-          item.classList.remove("button_alt-active"),
-        );
-
-        button.classList.add("button_alt-active");
-
-        this.events.emit("order:payment", button.name);
+        events.emit("order:payment", { payment: button.name as TPayment });
       });
     });
 
     this.addressInput.addEventListener("input", () => {
-      this.events.emit("order:change", {
+      events.emit("order:change", {
         field: "address",
         value: this.addressInput.value,
       });
     });
   }
 
-  protected onSubmit() {
-    this.events.emit("order:submit");
+  set payment(value: TPayment | null) {
+    this.paymentButtons.forEach((button) => {
+      button.classList.toggle("button_alt-active", button.name === value);
+    });
+  }
+
+  set address(value: string) {
+    this.addressInput.value = value;
   }
 }

@@ -1,8 +1,9 @@
-import type { IEvents } from "../../components/base/Events";
+import type { IBuyer, IBuyerModel } from "../../types";
+import type { IEvents } from "../base/Events";
 
-export class Buyer {
-  private data = {
-    payment: "",
+export class Buyer implements IBuyerModel {
+  private data: IBuyer = {
+    payment: null,
     address: "",
     email: "",
     phone: "",
@@ -10,27 +11,29 @@ export class Buyer {
 
   constructor(private events: IEvents) {}
 
-  setField(field: string, value: string) {
+  setField<K extends keyof IBuyer>(field: K, value: IBuyer[K]): void {
     this.data = {
       ...this.data,
       [field]: value,
     };
 
-    this.events.emit("buyer:changed", this.data);
+    this.events.emit("buyer:changed", this.getData());
   }
 
-  getData() {
+  getData(): IBuyer {
     return {
       ...this.data,
     };
   }
 
-  clear() {
+  clear(): void {
     this.data = {
-      payment: "",
+      payment: null,
       address: "",
       email: "",
       phone: "",
     };
+
+    this.events.emit("buyer:changed", this.getData());
   }
 }

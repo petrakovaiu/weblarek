@@ -1,31 +1,30 @@
 import { Component } from "../../base/Component";
 import type { IForm } from "../../../types";
+import { ensureElement } from "../../../utils/utils";
 
 export abstract class Form<T extends IForm = IForm> extends Component<T> {
-  protected submitButton: HTMLButtonElement;
+  protected readonly submitButton: HTMLButtonElement;
+  protected readonly errorsElement: HTMLElement;
 
-  constructor(container: HTMLElement) {
+  protected constructor(container: HTMLFormElement, onSubmit: () => void) {
     super(container);
+    this.submitButton = ensureElement<HTMLButtonElement>(
+      "button[type='submit']",
+      container,
+    );
+    this.errorsElement = ensureElement<HTMLElement>(".form__errors", container);
 
-    this.submitButton = container.querySelector("button[type='submit']")!;
-
-    this.container.addEventListener("submit", (event) => {
+    container.addEventListener("submit", (event) => {
       event.preventDefault();
-      this.onSubmit();
+      onSubmit();
     });
   }
-
-  protected onSubmit(): void {}
 
   set valid(value: boolean) {
     this.submitButton.disabled = !value;
   }
 
   set errors(value: string) {
-    const error = this.container.querySelector(".form__errors");
-
-    if (error) {
-      error.textContent = value;
-    }
+    this.errorsElement.textContent = value;
   }
 }

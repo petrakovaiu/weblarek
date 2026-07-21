@@ -1,99 +1,70 @@
-// Хорошая практика даже простые типы выносить в алиасы
-// Зато когда захотите поменять это достаточно сделать в одном месте
 type EventName = string | RegExp;
-type Subscriber = Function;
+type Subscriber = (data?: unknown) => void;
+
 export type EmitterEvent = {
   eventName: string;
   data: unknown;
 };
 
 export interface IEvents {
-  on<T extends object>(event: EventName, callback: (data: T) => void): void;
-  emit<T extends object>(event: string, data?: T): void;
-  trigger<T extends object>(
-    event: string,
-    context?: Partial<T>,
-  ): (data: T) => void;
+  on<T = unknown>(event: EventName, callback: (data: T) => void): void;
+  off(event: EventName, callback: Subscriber): void;
+  emit<T = unknown>(event: string, data?: T): void;
+  trigger<T = unknown>(event: string, context?: Partial<T>): (data?: T) => void;
 }
 
-/**
- * Брокер событий, классическая реализация
- * В расширенных вариантах есть возможность подписаться на все события
- * или слушать события по шаблону например
- */
 export class EventEmitter implements IEvents {
-  _events: Map<EventName, Set<Subscriber>>;
+  private _events = new Map<EventName, Set<Subscriber>>();
 
-  constructor() {
-    this._events = new Map<EventName, Set<Subscriber>>();
-  }
-
-  /**
-   * Установить обработчик на событие
-   */
-  on<T extends object>(eventName: EventName, callback: (event: T) => void) {
+  on<T = unknown>(eventName: EventName, callback: (data: T) => void): void {
     if (!this._events.has(eventName)) {
       this._events.set(eventName, new Set<Subscriber>());
     }
-    this._events.get(eventName)?.add(callback);
+    this._events.get(eventName)!.add(callback as Subscriber);
   }
 
-  /**
-   * Снять обработчик с события
-   */
-  off(eventName: EventName, callback: Subscriber) {
-    if (this._events.has(eventName)) {
-      this._events.get(eventName)!.delete(callback);
-      if (this._events.get(eventName)?.size === 0) {
-        this._events.delete(eventName);
-      }
-    }
+  off(eventName: EventName, callback: Subscriber): void {
+    const subscribers = this._events.get(eventName);
+    if (!subscribers) return;
+    subscribers.delete(callback);
+    if (subscribers.size === 0) this._events.delete(eventName);
   }
 
-  /**
-   * Инициировать событие с данными
-   */
-  emit<T extends object>(eventName: string, data?: T) {
+  emit<T = unknown>(eventName: string, data?: T): void {
     this._events.forEach((subscribers, name) => {
-      if (name === "*")
-        subscribers.forEach((callback) =>
-          callback({
-            eventName,
-            data,
-          }),
-        );
-      if (
-        (name instanceof RegExp && name.test(eventName)) ||
-        name === eventName
-      ) {
-        subscribers.forEach((callback) => callback(data));
-      }
+      const matches =
+        name === eventName ||
+        name === "*" ||
+        (name instanceof RegExp && name.test(eventName));
+
+      if (!matches) return;
+
+      subscribers.forEach((callback) => {
+        callback(name === "*" ? { eventName, data } : data);
+      });
     });
   }
 
-  /**
-   * Слушать все события
-   */
-  onAll(callback: (event: EmitterEvent) => void) {
+  onAll(callback: (event: EmitterEvent) => void): void {
     this.on("*", callback);
   }
 
-  /**
-   * Сбросить все обработчики
-   */
-  offAll() {
-    this._events = new Map<string, Set<Subscriber>>();
+  offAll(): void {
+    this._events.clear();
   }
 
-  /**
-   * Сделать коллбек триггер, генерирующий событие при вызове
-   */
-  trigger<T extends object>(eventName: string, context?: Partial<T>) {
-    return (event: object = {}) => {
-      this.emit(eventName, {
-        ...(event || {}),
-        ...(context || {}),
-      });
+  trigger<T = unknown>(eventName: string, context?: Partial<T>) {
+    return (data?: T) => {
+      if (
+        data &&
+        typeof data === "object" &&
+        context &&
+        typeof context === "object"
+      ) {
+        this.emit(eventName, { ...data, ...context });
+      } else {
+        this.emit(eventName, data ?? context);
+      }
     };
   }
 }

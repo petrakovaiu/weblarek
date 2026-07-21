@@ -4,18 +4,18 @@
 
 Структура проекта:
 
-- src/ — исходные файлы проекта
-- src/components/ — папка с JS компонентами
-- src/components/base/ — папка с базовым кодом
+- src/ - исходные файлы проекта
+- src/components/ - папка с JS компонентами
+- src/components/base/ - папка с базовым кодом
 
 Важные файлы:
 
-- index.html — HTML-файл главной страницы
-- src/types/index.ts — файл с типами
-- src/main.ts — точка входа приложения
-- src/scss/styles.scss — корневой файл стилей
-- src/utils/constants.ts — файл с константами
-- src/utils/utils.ts — файл с утилитами
+- index.html - HTML-файл главной страницы
+- src/types/index.ts - файл с типами
+- src/main.ts - точка входа приложения
+- src/scss/styles.scss - корневой файл стилей
+- src/utils/constants.ts - файл с константами
+- src/utils/utils.ts - файл с утилитами
 
 ## Установка и запуск
 
@@ -47,7 +47,7 @@ yarn build
 
 # Интернет-магазин «Web-Larёk»
 
-«Web-Larёk» — это интернет-магазин с товарами для веб-разработчиков, где пользователи могут просматривать товары, добавлять их в корзину и оформлять заказы. Сайт предоставляет удобный интерфейс с модальными окнами для просмотра деталей товаров, управления корзиной и выбора способа оплаты, обеспечивая полный цикл покупки с отправкой заказов на сервер.
+«Web-Larёk» - это интернет-магазин с товарами для веб-разработчиков, где пользователи могут просматривать товары, добавлять их в корзину и оформлять заказы. Сайт предоставляет удобный интерфейс с модальными окнами для просмотра деталей товаров, управления корзиной и выбора способа оплаты, обеспечивая полный цикл покупки с отправкой заказов на сервер.
 
 ## Архитектура приложения
 
@@ -108,7 +108,7 @@ Presenter - презентер содержит основную логику п
 
 ##### Данные
 
-В ходе анализа проекта было установлено: в приложении используются две сущности, которые описывают данные, — товар и покупатель.
+В ходе анализа проекта было установлено: в приложении используются две сущности, которые описывают данные, - товар и покупатель.
 
 Товар:
 interface IProduct {
@@ -200,84 +200,482 @@ phone: string.
 ###### Слой представления
 
 Шапка:
-
-<!-- Интерфейс `HeaderData`
-поля:
-`basketButton: HTMLButtonElement` - кнопка корзина;
-`counter: number` - счетчик количества товаров в корзине. -->
-
-`export class Header`
+`export class Header extends Component<IHeader> `
+Поля класса:
 `private basketButton: HTMLButtonElement`- элемент с кнопкой корзины
 `private counterElement: HTMLElement` - элемент, где отображается счетчик корзины
-`set counter (value: number)` - метод принимает и сохраняет значение счетчика корзины
+Конструктор:
+`constructor( container: HTMLElement, private events: IEvents,)` - принимает сам элемент и события для работы с методами IEvents
+`this.basketButton = ensureElement<HTMLButtonElement>` - получает один DOM-элемент кнопки корзины, содержит параметры:
+`".header__basket"`, - селектор для кнопки корзины
+`this.container,` - контекст для работы фунции
+`his.counterElement = ensureElement<HTMLSpanElement>` - получает один DOM-элемент с счетчиком корзины, содержит параметры:
+`".header__basket-counter"`, - селектор для счетчика корзины
+`this.container,` - контекст для работы фунции
+`this.basketButton.addEventListener` - слушатель кнопки, эмитит осбытие `"basket:open"` по клику
+Сеттеры
+`set counter (value: number)` - метод принимает и сохраняет значение счетчика корзины: `this.counterElement.textContent = String(value)`
 
+Каталог товаров:
 `export class Gallery`
-`private catalogElement: HTMLElement[]` - карточки в галлерее
+Поля
+`private catalogElement: HTMLElement` - HTML element для того, чтобы сохранить галлерею
+Конструктор:
+`constructor(container: HTMLElement)` - принимает сам элемент
+`this.catalogElement = this.container` - элементу присваивается контейнер
+Сеттеры:
 `set catalog (items: HTMLElement[])` - принимает массив карточек
+`this.catalogElement.replaceChildren(...items)` - spread-оператор распаковывает массив из презентера и помещает его в родительский элеменгт
 
+Модальное окно:
 `export class Modal`
+Поля:
+`private closeButton: HTMLButtonElement`- кнопка модального окна
 `private contentElement: HTMLElement` - содержимое модального окна
-`private modalButton: HTMLButtonElement`- кнопка модального окна
+Конструктор:
+`constructor(container: HTMLElement, actions: ModalActions)` - принимает сам элемент и события для работы с методами IEvents
+`this.closeButton = ensureElement<HTMLButtonElement>` - получает один DOM-элемент кнопки "закрыть", содержит параметры:
+`".modal__close"` - селектор для кнопки "закрыть"
+`container` - контекст для работы фунции
+`this.contentElement = ensureElement<HTMLElement>`- получает один DOM-элемент контента модального окна, содержит параметры:
+`".modal__content"` - селектор для содержимого окна
+`container` - контекст для работы фунции
+`this.closeButton.addEventListener` - слушатель кнопки "закрыть", вызывает колбэк из параметров конструктор во время создания образца класса
+`this.container.addEventListener` - слушатель отслеживает место клика `event.target === this.container` и закроет модальное окно только если пользователь нажал именно на фон.
 `set content (content: HTMLElement)` - метод принимает контент модалки
+Методы
+`open(): void` - открыть окно
+`this.container.classList.add("modal_active")` - добавляет модификатор
+`close(): void` - закрыть окно
+`this.container.classList.remove("modal_active")` - убирает модификатор
 
+Контент с подтверждением покупки и кол-вом списанных синапсов
 `export class Success`
-`private totalCostElement: HTMLElement` - контент с подтверждением покупки и кол-вом списанных синапсов
-`private acceptButton: HTMLButtonElement`- кнопка "принять"
+`private readonly descriptionElement` - Элемент с количеством списанных синапсов
+`private readonly closeButton`- кнопка закрывает окно
+Конструктор:
+`this.descriptionElement = ensureElement<HTMLElement>` - получает один DOM-элемент с с количеством списанных синапсов, принимает
+`".order-success__description"` - селектор для элемента с описанием итоговой суммы корзины
+`container` - контекст для работы фунции
+`this.closeButton = ensureElement<HTMLButtonElement>` - получает один DOM-элемент с кнопкой по которой окно закроется
+`".order-success__close"` - селектор для элемента с кнопкой
+`container` - контекст для работы фунции
+`this.closeButton.addEventListener` - слушатель события для кнопки, по клику эмитит событие `"success:close"`
+Сеттер:
 `set totalCost (value: number)` - метод принимает контент количество списанных синапсов
+`this.descriptionElement.textContent = `Списано ${value} синапсов`` - внутри элементу с описанием итоговой суммы корзины присваивается шаблонная строка c итоговым значением
 
-`export class Basket`
-`private isEmptyElement?: HTMLParagraphElement` - поле для контента внутри корзины по умолчанию (пустая корзина)
-`private cardList: HTMLLIElement[]` - список карточек
-`private basketButton: HTMLButtonElement`- кнопка "оформить"
-`private totalCostElement: HTMLParagraphElement` - кол-во списанных синапсов
-`set totalCost (value: number)` - метод принимает контент количество списываемых синапсов
-`set content (iems: HTMLLIElement[])` - метод принимает список карточек
+Класс Basket отвечает за отображение корзины
+`export class Basket extends Component<IBasket>`
+Поля
+`private readonly listElement: HTMLElement` - DOM-элемент списка
+`private buttonElement: HTMLElement` - кнопка «Оформить».
+`private priceElement: HTMLParagraphElement` - элемент для отображения общей стоимости товаров.
+Конструктор
+`constuctor(container: HTMLElement, events: IEvents)` - принимает корневой DOM-элемент корзины и экземпляр брокера событий.
+`this.listElement = ensureElement<HTMLElement>` - получает DOM-элемент списка
+Параметры:
+`".basket__list"` - селектор списка;
+`container` - контекст поиска элемента.
+`this.buttonElement = ensureElement<HTMLButtonElement>` - получает DOM-элемент кнопки оформления заказа.
+Параметры:
+`".basket__button"` - селектор кнопки «Оформить»;
+`container` - контекст поиска элемента.
+`this.priceElement = ensureElement<HTMLParagraphElement>` - получает DOM-элемент с общей стоимостью заказа.
+Параметры:
+`".basket__price"` - селектор элемента итоговой стоимости;
+`container` - контекст поиска элемента.
+`this.basketButton.addEventListener("click", ...)` - устанавливает слушатель события для кнопки. При нажатии генерирует событие `"order:open"` через брокер событий.
+Сеттеры:
+`set total(value: number)` - принимает общую стоимость товаров и отображает её в элементе priceElement.
+`this.priceElement.textContent = `${value} синапсов``;
+`set items(items: HTMLLIElement[])`- принимает массив карточек товаров и отображает его в корзине:`this.listElement.replaceChildren(...items);`
+`set valid(value: boolean)`- Проверка на наличие товаров. Если товары отсутствуют, кнопка оформления становится недоступной:`this.buttonElement.disabled = !value;`
 
-`export absctract class Card` Является базовым классом для всех компонентов карточек в приложении
-`private titleElement: HTMLSpanElement`- название товара
-`private priceElement: HTMLSpanElement` - кол-во списанных синапсов
-`set title (title: string)` - метод принимает строку название товара
-`set price (value: TPayment)` - метод принимает числовое значение, цену
+Абстрактный базовый класс для всех компонентов карточек приложения.
+`export abstract class Card<T extends ICard> extends Component<T>`
+Поля
+`protected titleElement: HTMLSpanElement` - элемент с названием товара.
+`protected priceElement: HTMLSpanElement` - элемент со стоимостью товара.
+Поля имеют модификатор protected, поскольку используются дочерними классами.
+Конструктор
+`constructor(container: HTMLElement)` - принимает корневой DOM-элемент карточки.
+`this.titleElement = ensureElement<HTMLSpanElement>` - получает DOM-элемент с названием товара.
+Параметры:
+`".card__title"` - селектор названия товара;
+`container` - контекст поиска элемента.
+`this.priceElement = ensureElement<HTMLSpanElement>` - получает DOM-элемент со стоимостью товара.
+Параметры:
+`".card__price"` - селектор стоимости товара;
+`container` - контекст поиска элемента.
+Сеттеры
+`set title(value: string)` - принимает название товара и отображает его в элементе titleElement.
+`this.titleElement.textContent = value`;
+`set price(value: number | null)` - принимает стоимость товара.
+Если цена указана, элементу присваивается строка с количеством синапсов.
+`this.priceElement.textContent = `${value} синапсов``;
+Если цена отсутствует, отображается текст «Бесценно».
 
-`export class CardBasket` Элемент списка для корзины
-`private indexElement: HTMLSpanElement` - порядковый номер
-`private totalCostElement: HTMLSpanElement` - итоговая стоимость товаров в корзине
-`set index (value: number)` - метод принимает индекс товара
-`set totalCost (value: number)` - метож принимает итоговая стоимость товаров в корзине
+Класс CardGallery отвечает за отображение карточки товара в каталоге
+`export class CardGallery extends Card<ICardGallery>` - Наследуется от абстрактного класса `Card`.
+Поля
+`private categoryElement: HTMLSpanElement` - элемент с категорией товара.
+`private imageElement: HTMLImageElement` - изображение товара.
+Конструктор
+`constructor(container: HTMLElement, actions: ICardActions)` - принимает корневой DOM-элемент карточки и объект с обработчиками действий.
+`this.categoryElement = ensureElement<HTMLSpanElement>` - получает DOM-элемент категории товара.
+Параметры:
+`".card__category"` - селектор категории;
+`container` - контекст поиска элемента.
+`this.imageElement = ensureElement<HTMLImageElement>` - получает DOM-элемент изображения товара.
+Параметры:
+`".card__image"` - селектор изображения;
+`container` - контекст поиска элемента.
+`this.container.addEventListener("click", actions.onClick)` - устанавливает слушатель события на всю карточку. При нажатии вызывается переданный обработчик выбора товара.
+Обработчик, переданный из презентера, генерирует событие `"card:select"`.
+Сеттеры
+`set category(value: string)` - принимает категорию товара, отображает её и добавляет соответствующий CSS-модификатор из объекта categoryMap.
+`set image(value: string)` - принимает URL изображения товара и передаёт его в метод `setImage`:
+`this.setImage(`
+`this.imageElement,`
+`value,`
+`this.titleElement.textContent ?? ""`
+`)`;
 
-`export class CardCatalog` Элемент списка для каталога
-`private categoryElement: HTMLSpanElement` - категория
-`private imageElement: HTMLImgElement` - изображение товара
-`set category (category: string)` - метод принимает индекс товара
-`set image (url: string)` - метод принимает ссылку на изображение товара
+Подробная информация о выбранном товаре в модальном окне.
+`export class CardPreview extends Card<ICardPreview>` - Наследуется от абстрактного класса Card.
+Поля
+`private categoryElement: HTMLSpanElement` - элемент с категорией товара.
+`private imageElement: HTMLImageElement` - изображение товара.
+`private descriptionElement: HTMLParagraphElement` - элемент с описанием товара.
+`private addDeleteButton: HTMLButtonElement` - кнопка добавления товара в корзину или удаления товара из корзины.
+Конструктор
+`constructor(container: HTMLElement, actions: ICardActions)` - принимает корневой DOM-элемент карточки и объект с обработчиками действий.
+`this.categoryElement = ensureElement<HTMLSpanElement>` - получает DOM-элемент категории товара.
+Параметры:
+`".card__category"` - селектор категории;
+`container` - контекст поиска элемента.
+`this.imageElement = ensureElement<HTMLImageElement>` - получает DOM-элемент изображения.
+Параметры:
+`".card__image" `- селектор изображения;
+`container` - контекст поиска элемента.
+`this.descriptionElement = ensureElement<HTMLParagraphElement>` - получает DOM-элемент с описанием товара.
+Параметры:
+`".card__text"` - селектор описания;
+`container` - контекст поиска элемента.
+`this.addDeleteButton = ensureElement<HTMLButtonElement>` - получает DOM-элемент кнопки добавления или удаления товара.
+Параметры:
+`".card__button"` - селектор кнопки;
+`container` - контекст поиска элемента.
+`this.addDeleteButton.addEventListener("click", actions.onClick)` - устанавливает слушатель события. При нажатии вызывается переданный обработчик.
+Обработчик генерирует событие `"cart:add"` или `"cart:remove"` в зависимости от наличия товара в корзине.
+Сеттеры
+`set category(value: string)` - устанавливает категорию товара и соответствующий CSS-модификатор.
+`set image(value: string)` - устанавливает изображение товара.
+`set description(value: string)` - принимает описание товара и отображает его в элементе descriptionElement.
+`this.descriptionElement.textContent = value;`
+`set buttonText(value: string)` - изменяет текст кнопки.
+`this.addDeleteButton.textContent = value;`
+`set buttonDisabled(value: boolean)` - блокирует или активирует кнопку.
+`this.addDeleteButton.disabled = value;`
+Кнопка может иметь следующие состояния:
+«В корзину» - товар доступен и отсутствует в корзине;
+«Удалить из корзины» - товар уже добавлен;
+«Недоступно» - у товара отсутствует цена, кнопка заблокирована.
 
-`export class CardPreview` Превью карточки
-`private categoryElement: HTMLSpanElement` - категория
-`private imageElement: HTMLImgElement` - изображение товара
-`private descriptionElement: HTMLSpanElement` - описание товара
-`private addDeleteButton: HTMLButtonElement` - добавить/удалить товар из корзины toggleButton
-`set category (category: string)` - метод принимает индекс товара
-`set image (url: string)` - метод принимает ссылку на изображение товара
-`set description (url: string)` - метод принимает описание товара
-
-`export abstract class Form` Является базовым классом для форм приложения
-`private errorsElement?: HTMLSpanElement` - ошибки, возникающие в форме, опциональное поле
-`set errors (url: string)` - метод принимает описание товара и добавляет ошибку в `<span>`, если есть
-
-`export class FormOrder` форма заказа
-`private paymentElement: HTMLButtonElement[]` - кнопки для оплаты
-`private addressElement: HTMLInputElement` - адрес доставки
-`private forwardButton: HTMLButtonElement` - кнопка "далее", доступна после корректного заполнения формы
-`set payment (value: TPayment)` - метод принимает вид оплаты, выбранный пользователем
-`set address (value: string)` - метод принимает строку с адресом
-
-`export class FormOrder` форма контактов
-`private emailElement: HTMLInputElement` - почта пользователя
-`private phoneElement: HTMLInputElement` - телефон
-`private submitButton: HTMLButtonElement` - кнопка подтверждения заказа, доступна после корректного заполнения формы
-`set email (value: string)` - метод принимает электронную почту
-`set phone (value: string)` - метод принимает номер телефона
+export class CardBasket extends Card<ICardBasket>
+Класс CardBasket отвечает за отображение отдельного товара в корзине. Наследуется от абстрактного класса Card.
+Поля
+private indexElement: HTMLSpanElement - элемент с порядковым номером товара.
+private totalCostElement: HTMLSpanElement - элемент со стоимостью товара.
+private deleteButton: HTMLButtonElement - кнопка удаления товара из корзины.
+Конструктор
+constructor(container: HTMLElement, actions: ICardActions) - принимает корневой DOM-элемент карточки и объект с обработчиками действий.
+this.indexElement = ensureElement<HTMLSpanElement> - получает DOM-элемент с порядковым номером товара.
+Параметры:
+".basket\_\_item-index" - селектор номера;
+container - контекст поиска элемента.
+this.totalCostElement = ensureElement<HTMLSpanElement> - получает DOM-элемент со стоимостью товара.
+Параметры:
+".card\*\*price" - селектор стоимости;
+container - контекст поиска элемента.
+this.deleteButton = ensureElement<HTMLButtonElement> - получает DOM-элемент кнопки удаления.
+Параметры:
+".basket\_\_item-delete" - селектор кнопки удаления;
+container - контекст поиска элемента.
+this.deleteButton.addEventListener("click", actions.onClick) - устанавливает слушатель события. При нажатии вызывается обработчик, генерирующий событие "cart:remove".
+Сеттеры
+set index(value: number) - принимает порядковый номер товара и отображает его в элементе indexElement.
+this.indexElement.textContent = String(value);
+set totalCost(value: number) - принимает стоимость товара и отображает её в элементе totalCostElement.
+this.totalCostElement.textContent = `${value} синапсов`;
+export class FormOrder extends Form<IOrderForm>
+Класс FormOrder отвечает за первый этап оформления заказа: выбор способа оплаты и ввод адреса доставки. Наследуется от абстрактного класса Form.
+Поля
+private paymentElements: HTMLButtonElement[] - массив кнопок выбора способа оплаты.
+private addressElement: HTMLInputElement - поле ввода адреса доставки.
+private forwardButton: HTMLButtonElement - кнопка «Далее».
+Конструктор
+constructor(container: HTMLFormElement, events: IEvents) - принимает корневой DOM-элемент формы и брокер событий.
+this.paymentElements = Array.from(...) - получает массив кнопок оплаты.
+this.paymentElements = Array.from(
+container.querySelectorAll<HTMLButtonElement>(".button_alt")
+);
+Кнопки оплаты:
+«Онлайн»;
+«При получении».
+Для каждой кнопки устанавливается слушатель события "click".
+При нажатии генерируется событие "order:payment" с выбранным способом оплаты.
+this.addressElement = ensureElement<HTMLInputElement> - получает поле ввода адреса.
+Параметры:
+"input[name='address']" - селектор поля адреса;
+container - контекст поиска элемента.
+this.addressElement.addEventListener("input", ...) - устанавливает слушатель изменения адреса.
+При вводе генерируется событие "order:change".
+При отправке формы генерируется событие "order:submit".
+Сеттеры
+set payment(value: TPayment) - принимает выбранный способ оплаты.
+У всех кнопок удаляется модификатор:
+button_alt-active
+После этого модификатор добавляется кнопке, соответствующей выбранному способу оплаты.
+set address(value: string) - устанавливает значение в поле адреса.
+this.addressElement.value = value;
+set valid(value: boolean) - управляет доступностью кнопки «Далее».
+set errors(value: string) - отображает ошибки формы.
+export class FormContacts extends Form<IContactsForm>
+Класс FormContacts отвечает за второй этап оформления заказа: ввод электронной почты и номера телефона. Наследуется от абстрактного класса Form.
+Поля
+private emailElement: HTMLInputElement - поле ввода электронной почты.
+private phoneElement: HTMLInputElement - поле ввода номера телефона.
+private submitButton: HTMLButtonElement - кнопка подтверждения заказа.
+Конструктор
+constructor(container: HTMLFormElement, events: IEvents) - принимает корневой DOM-элемент формы и брокер событий.
+this.emailElement = ensureElement<HTMLInputElement> - получает поле ввода электронной почты.
+Параметры:
+"input[name='email']" - селектор поля электронной почты;
+container - контекст поиска элемента.
+this.phoneElement = ensureElement<HTMLInputElement> - получает поле ввода телефона.
+Параметры:
+"input[name='phone']" - селектор поля телефона;
+container - контекст поиска элемента.
+Для полей устанавливаются слушатели события "input".
+При изменении значений генерируется событие "contacts:change" с названием изменённого поля и его новым значением.
+При отправке формы генерируется событие "contacts:submit".
+Сеттеры
+set email(value: string) - устанавливает электронную почту пользователя.
+this.emailElement.value = value;
+set phone(value: string) - устанавливает номер телефона пользователя.
+this.phoneElement.value = value;
+set valid(value: boolean) - включает или отключает кнопку подтверждения заказа.
+set errors(value: string) - отображает ошибки формы.
 
 ###### События
 
+Взаимодействие между слоями приложения осуществляется с помощью брокера событий EventEmitter.
+События генерируются классами представления и моделями данных. Презентер подписывается на события и координирует взаимодействие между слоями приложения.
+События представления
+"card:select"
+Пользователь выбрал карточку товара для просмотра.
+Данные события:
+{
+id: string;
+}
+"basket:open"
+Пользователь нажал на иконку корзины.
+Событие не передаёт данные.
+"cart:add"
+Пользователь нажал кнопку добавления товара в корзину.
+Данные события:
+{
+id: string;
+}
+"cart:remove"
+Пользователь нажал кнопку удаления товара из корзины.
+Данные события:
+{
+id: string;
+}
+"order:open"
+Пользователь нажал кнопку оформления заказа.
+Событие не передаёт данные.
+"order:payment"
+Пользователь выбрал способ оплаты.
+Данные события:
+{
+payment: TPayment;
+}
+"order:change"
+Пользователь изменил адрес доставки.
+Данные события:
+{
+field: "address";
+value: string;
+}
+"contacts:change"
+Пользователь изменил электронную почту или номер телефона.
+Данные события:
+{
+field: "email" | "phone";
+value: string;
+}
+"order:submit"
+Пользователь подтвердил первый этап оформления заказа.
+Событие не передаёт данные.
+"contacts:submit"
+Пользователь подтвердил второй этап оформления и отправку заказа.
+Событие не передаёт данные.
+"modal:close"
+Пользователь нажал кнопку закрытия или фон модального окна.
+Событие не передаёт данные.
+"success:close"
+Пользователь закрыл сообщение об успешном оформлении заказа.
+Событие не передаёт данные.
+События моделей данных
+"catalog:changed"
+Модель Shop сохранила новый массив товаров.
+После получения события презентер получает товары из модели и создаёт карточки каталога.
+"product:selected"
+В модели Shop изменился товар, выбранный для просмотра.
+После получения события презентер создаёт карточку предпросмотра и открывает модальное окно.
+"cart:changed"
+Изменилось содержимое корзины.
+Данные события:
+{
+count: number;
+}
+После получения события презентер обновляет счётчик корзины и, если корзина открыта, её содержимое.
+"buyer:changed"
+Изменились данные покупателя.
+После получения события презентер проверяет заполненность полей и обновляет состояние форм.
+
 ####### Презентер
+
+function presenter(...)
+В приложении используется один презентер, реализованный в виде функции presenter() в файле main.ts.
+Отдельный класс презентера не используется, поскольку приложение является одностраничным.
+Презентер связывает модели данных и классы представления и реализует архитектурный паттерн MVP - Model–View–Presenter.
+Параметры функции
+Функция принимает модели через интерфейсы:
+shop: IShopModel
+cart: ICartModel
+buyer: IBuyerModel
+Функция принимает представления через интерфейсы:
+header: IHeaderView
+gallery: IGalleryView
+basket: IBasketView
+modal: IModalView
+success: ISuccessView
+orderForm: IOrderFormView
+contactsForm: IContactsFormView
+Также функция принимает:
+events: IEvents
+communication: ICommunication
+events - брокер событий.
+communication - слой взаимодействия с сервером, использующий базовый класс Api.
+Загрузка каталога
+Презентер вызывает метод коммуникационного слоя:
+communication.getProducts();
+После получения ответа массив товаров сохраняется в модели:
+shop.setItems(data.items);
+Модель генерирует событие "catalog:changed".
+Создание карточки каталога
+Отдельная функция:
+function createCatalogCard(
+product: IProduct,
+events: IEvents
+): HTMLElement
+создаёт одну карточку товара.
+Функция:
+клонирует шаблон карточки;
+создаёт экземпляр CardGallery;
+передаёт карточке обработчик выбора;
+вызывает render() с данными товара;
+возвращает готовый DOM-элемент.
+В обработчике события "catalog:changed" презентер получает массив товаров:
+shop.getItems();
+Для каждого товара вызывается createCatalogCard.
+const cards = shop
+.getItems()
+.map((product) => createCatalogCard(product, events));
+После этого массив карточек передаётся в компонент Gallery:
+gallery.render({
+catalog: cards,
+});
+Выбор товара
+Представление CardGallery генерирует событие:
+card:select
+Презентер получает идентификатор товара, находит его через модель и сохраняет выбранный товар:
+const product = shop.getProduct(id);
+if (product) {
+shop.setSelectedItem(product);
+}
+После изменения выбранного товара модель генерирует событие "product:selected".
+Презентер получает выбранный товар, создаёт карточку CardPreview, передаёт её в Modal и открывает модальное окно.
+Работа с корзиной
+При событии "cart:add" презентер:
+получает товар из модели Shop;
+вызывает cart.addItem(product);
+закрывает модальное окно.
+При событии "cart:remove" презентер:
+вызывает cart.removeItem(id);
+закрывает модальное окно или обновляет содержимое корзины.
+После изменения корзины модель генерирует событие "cart:changed".
+Презентер обновляет счётчик:
+header.render({
+counter: cart.getCount(),
+});
+Открытие корзины
+При событии "basket:open" презентер:
+получает массив товаров из модели Cart;
+создаёт для каждого товара экземпляр CardBasket;
+собирает массив DOM-элементов;
+передаёт массив в Basket;
+передаёт общую стоимость;
+вставляет корзину в Modal;
+открывает модальное окно.
+Работа с формами
+При событии "order:payment" презентер сохраняет выбранный способ оплаты в модели Buyer.
+При событии "order:change" презентер сохраняет адрес доставки.
+При событии "contacts:change" презентер сохраняет электронную почту или телефон.
+После каждого изменения модель генерирует событие "buyer:changed".
+Презентер проверяет данные и обновляет:
+form.valid
+form.errors
+При событии "order:submit" презентер открывает вторую форму.
+При событии "contacts:submit" презентер формирует объект заказа и отправляет его на сервер через Communication.
+Успешное оформление заказа
+После успешного ответа сервера презентер:
+сохраняет итоговую стоимость;
+очищает корзину;
+очищает данные покупателя;
+передаёт стоимость в компонент Success;
+вставляет компонент Success в модальное окно.
+При событии "success:close" презентер закрывает модальное окно.
+Обязанности презентера
+Презентер:
+загружает данные с сервера;
+подписывается на события моделей и представлений;
+вызывает методы моделей;
+создаёт компоненты карточек;
+обновляет классы представления;
+управляет модальными окнами;
+выполняет проверку данных форм;
+отправляет заказ на сервер;
+очищает данные после успешного оформления.
+Презентер не хранит каталог, корзину или данные покупателя. Эти данные хранятся только в моделях.
+Презентер не генерирует события. Он обрабатывает события и вызывает методы моделей или представлений.
+Последовательность взаимодействия
+Пользователь
+→ Представление
+→ emit()
+→ EventEmitter
+→ Presenter
+→ Model
+→ emit()
+→ EventEmitter
+→ Presenter
+→ Представление
+Таким образом:
+Model хранит и изменяет данные;
+View отображает интерфейс и сообщает о действиях пользователя;
+Presenter связывает модели и представления и содержит логику приложения.
