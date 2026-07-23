@@ -1,7 +1,8 @@
-import type { IBuyer, IBuyerModel } from "../../types";
+import type { IBuyer } from "../../types/index.ts";
+import type { TBuyerErrors } from "../../types/index.ts";
 import type { IEvents } from "../base/Events";
 
-export class Buyer implements IBuyerModel {
+export class Buyer {
   private data: IBuyer = {
     payment: null,
     address: "",
@@ -11,22 +12,20 @@ export class Buyer implements IBuyerModel {
 
   constructor(private events: IEvents) {}
 
-  setField<K extends keyof IBuyer>(field: K, value: IBuyer[K]): void {
-    this.data = {
-      ...this.data,
-      [field]: value,
-    };
+  // Сохранение данных (один или несколько)
+  setData(newData: IBuyer): void {
+    this.data = { ...this.data, ...newData };
 
-    this.events.emit("buyer:changed", this.getData());
+    this.events.emit("buyer:changed");
   }
 
+  // Получение всех данных
   getData(): IBuyer {
-    return {
-      ...this.data,
-    };
+    return this.data;
   }
 
-  clear(): void {
+  // Очистка данных
+  clearData(): void {
     this.data = {
       payment: null,
       address: "",
@@ -34,6 +33,24 @@ export class Buyer implements IBuyerModel {
       phone: "",
     };
 
-    this.events.emit("buyer:changed", this.getData());
+    this.events.emit("buyer:changed");
+  }
+  // Валидация данных
+  validate(): TBuyerErrors {
+    const notValid = (field: string): boolean => field.trim().length == 0;
+    const errors: TBuyerErrors = {};
+    if (this.data.payment == null) {
+      errors.payment = "Выберите тип оплаты";
+    }
+    if (notValid(this.data.address)) {
+      errors.address = "Адрес не может быть пустым";
+    }
+    if (notValid(this.data.email)) {
+      errors.email = "Email не может быть пустым";
+    }
+    if (notValid(this.data.phone)) {
+      errors.phone = "Телефон не может быть пустым";
+    }
+    return errors;
   }
 }
