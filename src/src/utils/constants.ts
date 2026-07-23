@@ -1,5 +1,4 @@
-const API_ORIGIN =
-  import.meta.env.VITE_API_ORIGIN ?? "https://larek-api.nomoreparties.co";
+const API_ORIGIN = import.meta.env.VITE_API_ORIGIN;
 
 export const API_URL = `${API_ORIGIN}/api/weblarek`;
 export const CDN_URL = `${API_ORIGIN}/content/weblarek`;

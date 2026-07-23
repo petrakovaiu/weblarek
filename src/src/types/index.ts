@@ -70,9 +70,10 @@ export interface ICartModel {
 }
 
 export interface IBuyerModel {
-  setField<K extends keyof IBuyer>(field: K, value: IBuyer[K]): void;
+  setData(data: Partial<IBuyer>): void;
   getData(): IBuyer;
-  clear(): void;
+  clearData(): void;
+  validate(): TBuyerErrors;
 }
 
 // Данные представлений
@@ -169,6 +170,10 @@ export interface IFormOrderView {
 
 export interface IFormContactsView {
   render(data?: Partial<IFormContacts>): HTMLElement;
+}
+
+export interface ICardPreviewView {
+  render(data?: Partial<ICardPreview>): HTMLElement;
 }
 
 // Данные событий

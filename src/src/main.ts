@@ -18,9 +18,9 @@ import { Header } from "./components/views/Header";
 import { Modal } from "./components/views/Modal";
 import { Success } from "./components/views/Success";
 import type {
-  IBuyer,
-  IBuyerChangedEvent,
+  IBasketView,
   IBuyerModel,
+  ICardPreviewView,
   ICartModel,
   IComunication,
   IFormContacts,
@@ -35,20 +35,11 @@ import type {
   IProductIdEvent,
   IShopModel,
   ISuccessView,
-  IBasketView,
   TBuyerErrors,
   TPayment,
 } from "./types";
 import { API_URL, CDN_URL } from "./utils/constants";
 import { cloneTemplate, createElement, ensureElement } from "./utils/utils";
-
-type ModalScreen =
-  | "preview"
-  | "basket"
-  | "order"
-  | "contacts"
-  | "success"
-  | null;
 
 function createCatalogCard(product: IProduct, events: IEvents): HTMLElement {
   const card = new CardGallery(cloneTemplate("#card-catalog"), {
@@ -59,23 +50,6 @@ function createCatalogCard(product: IProduct, events: IEvents): HTMLElement {
   return card.render({
     ...product,
     image: `${CDN_URL}${product.image}`,
-  });
-}
-
-function createPreviewCard(
-  product: IProduct,
-  inCart: boolean,
-  events: IEvents,
-): HTMLElement {
-  const card = new CardPreview(cloneTemplate("#card-preview"), {
-    onBuy: () => events.emit<IProductIdEvent>("cart:add", { id: product.id }),
-  });
-
-  return card.render({
-    ...product,
-    image: `${CDN_URL}${product.image}`,
-    buttonText: inCart ? "Уже в корзине" : "В корзину",
-    buttonDisabled: inCart || product.price === null,
   });
 }
 
@@ -96,25 +70,6 @@ function createBasketCard(
   });
 }
 
-function getBuyerErrors(data: IBuyer): TBuyerErrors {
-  const errors: TBuyerErrors = {};
-
-  if (!data.payment) errors.payment = "Выберите способ оплаты";
-  if (!data.address.trim()) errors.address = "Укажите адрес доставки";
-  if (!data.email.trim()) {
-    errors.email = "Укажите email";
-  } else if (!/^\S+@\S+\.\S+$/.test(data.email)) {
-    errors.email = "Введите корректный email";
-  }
-  if (!data.phone.trim()) {
-    errors.phone = "Укажите телефон";
-  } else if (data.phone.replace(/\D/g, "").length < 10) {
-    errors.phone = "Введите корректный телефон";
-  }
-
-  return errors;
-}
-
 function errorText(
   errors: TBuyerErrors,
   fields: Array<keyof TBuyerErrors>,
@@ -125,7 +80,7 @@ function errorText(
     .join("; ");
 }
 
-export function presenter(
+function presenter(
   communication: IComunication,
   shop: IShopModel,
   cart: ICartModel,
@@ -135,14 +90,14 @@ export function presenter(
   basket: IBasketView,
   modal: IModalView,
   success: ISuccessView,
+  previewCard: ICardPreviewView,
   orderForm: IFormOrderView,
   contactsForm: IFormContactsView,
   events: IEvents,
 ): void {
-  let activeScreen: ModalScreen = null;
-
   const renderBasket = (): void => {
     const items = cart.getItems();
+
     basket.render({
       items: items.map((product, index) =>
         createBasketCard(product, index + 1, events),
@@ -150,31 +105,50 @@ export function presenter(
       total: cart.getTotalCost(),
       valid: items.length > 0,
     });
-    modal.content = basket.render();
   };
 
-  const renderOrder = (state: IBuyerChangedEvent): void => {
-    const buyerErrors = getBuyerErrors(state);
-    const errors = errorText(buyerErrors, ["payment", "address"]);
-    const data: IFormOrder = {
+  const renderPreview = (product: IProduct): void => {
+    let buttonText: string;
+
+    if (product.price === null) {
+      buttonText = "Недоступно";
+    } else if (cart.hasProduct(product.id)) {
+      buttonText = "Удалить из корзины";
+    } else {
+      buttonText = "В корзину";
+    }
+
+    previewCard.render({
+      title: product.title,
+      category: product.category,
+      image: product.image,
+      description: product.description,
+      price: product.price,
+      buttonText,
+      buttonDisabled: product.price === null,
+    });
+  };
+
+  const renderForms = (): void => {
+    const state = buyer.getData();
+    const errors = buyer.validate();
+
+    const orderData: IFormOrder = {
       payment: state.payment,
       address: state.address,
-      errors,
-      valid: !buyerErrors.payment && !buyerErrors.address,
+      errors: errorText(errors, ["payment", "address"]),
+      valid: !errors.payment && !errors.address,
     };
-    modal.content = orderForm.render(data);
-  };
 
-  const renderContacts = (state: IBuyerChangedEvent): void => {
-    const buyerErrors = getBuyerErrors(state);
-    const errors = errorText(buyerErrors, ["email", "phone"]);
-    const data: IFormContacts = {
+    const contactsData: IFormContacts = {
       email: state.email,
       phone: state.phone,
-      errors,
-      valid: !buyerErrors.email && !buyerErrors.phone,
+      errors: errorText(errors, ["email", "phone"]),
+      valid: !errors.email && !errors.phone,
     };
-    modal.content = contactsForm.render(data);
+
+    orderForm.render(orderData);
+    contactsForm.render(contactsData);
   };
 
   events.on("catalog:changed", () => {
@@ -185,6 +159,7 @@ export function presenter(
 
   events.on<IProductIdEvent>("card:select", ({ id }) => {
     const product = shop.getProduct(id);
+
     if (product) {
       shop.setSelectedItem(product);
     }
@@ -192,21 +167,29 @@ export function presenter(
 
   events.on("product:selected", () => {
     const product = shop.getSelectedItem();
-    if (!product) return;
 
-    activeScreen = "preview";
-    modal.content = createPreviewCard(
-      product,
-      cart.hasProduct(product.id),
-      events,
-    );
+    if (!product) {
+      return;
+    }
+
+    renderPreview(product);
+    modal.content = previewCard.render();
     modal.open();
   });
 
-  events.on<IProductIdEvent>("cart:add", ({ id }) => {
-    const product = shop.getProduct(id);
-    if (product && product.price !== null) cart.addItem(product);
-    activeScreen = null;
+  events.on("preview:action", () => {
+    const product = shop.getSelectedItem();
+
+    if (!product || product.price === null) {
+      return;
+    }
+
+    if (cart.hasProduct(product.id)) {
+      cart.removeItem(product.id);
+    } else {
+      cart.addItem(product);
+    }
+
     modal.close();
   });
 
@@ -216,96 +199,81 @@ export function presenter(
 
   events.on("cart:changed", () => {
     header.counter = cart.getCount();
-    if (activeScreen === "basket") renderBasket();
+    renderBasket();
+
+    const selectedProduct = shop.getSelectedItem();
+    if (selectedProduct) {
+      renderPreview(selectedProduct);
+    }
   });
 
   events.on("basket:open", () => {
-    activeScreen = "basket";
-    renderBasket();
+    modal.content = basket.render();
     modal.open();
   });
 
   events.on("order:open", () => {
-    const state = buyer.getData();
-    activeScreen = "order";
-    renderOrder(state);
+    modal.content = orderForm.render();
+    modal.open();
   });
 
   events.on<{ payment: TPayment }>("order:payment", ({ payment }) => {
-    buyer.setField("payment", payment);
+    buyer.setData({ payment });
   });
 
-  events.on<IFormFieldEvent<"address">>("order:change", ({ field, value }) => {
-    buyer.setField(field, value);
+  events.on<IFormFieldEvent<"address">>("order:change", ({ value }) => {
+    buyer.setData({ address: value });
   });
 
   events.on<IFormFieldEvent<"email" | "phone">>(
     "contacts:change",
     ({ field, value }) => {
-      if (field === "email") buyer.setField("email", value);
-      if (field === "phone") buyer.setField("phone", value);
+      buyer.setData({ [field]: value });
     },
   );
 
-  events.on<IBuyerChangedEvent>("buyer:changed", (state) => {
-    if (activeScreen === "order") renderOrder(state);
-    if (activeScreen === "contacts") renderContacts(state);
+  events.on("buyer:changed", () => {
+    renderForms();
   });
 
   events.on("order:submit", () => {
-    const state = buyer.getData();
-    const errors = getBuyerErrors(state);
-    if (errors.payment || errors.address) {
-      renderOrder(state);
-      return;
-    }
-
-    activeScreen = "contacts";
-    renderContacts(state);
+    modal.content = contactsForm.render();
+    modal.open();
   });
 
   events.on("contacts:submit", async () => {
     const state = buyer.getData();
-    const errors = getBuyerErrors(state);
-    if (errors.email || errors.phone) {
-      renderContacts(state);
-      return;
-    }
 
-    const total = cart.getTotalCost();
     try {
-      await communication.postProduct({
+      const order = await communication.postProduct({
         ...state,
         items: cart.getItems().map((item) => item.id),
-        total,
+        total: cart.getTotalCost(),
       });
 
-      activeScreen = "success";
-      success.total = total;
+      success.total = order.total;
       modal.content = success.render();
+      modal.open();
+
       cart.clearCart();
-      buyer.clear();
+      buyer.clearData();
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Не удалось оформить заказ";
-      modal.content = contactsForm.render({
-        email: state.email,
-        phone: state.phone,
-        valid: true,
+
+      contactsForm.render({
         errors: message,
       });
     }
   });
 
   events.on("success:close", () => {
-    activeScreen = null;
     modal.close();
   });
 
-  events.on("modal:close", () => {
-    activeScreen = null;
-    modal.close();
-  });
+  renderBasket();
+  renderForms();
+  header.counter = cart.getCount();
 
   communication
     .getProducts()
@@ -313,6 +281,7 @@ export function presenter(
     .catch((error: unknown) => {
       const message =
         error instanceof Error ? error.message : "Не удалось загрузить каталог";
+
       gallery.catalog = [
         createElement<HTMLElement>("p", {
           textContent: `Ошибка загрузки: ${message}`,
@@ -331,10 +300,14 @@ const buyer = new Buyer(events);
 const header = new Header(ensureElement<HTMLElement>(".header"), events);
 const gallery = new Gallery(ensureElement<HTMLElement>(".gallery"));
 const basket = new Basket(cloneTemplate<HTMLElement>("#basket"), events);
-const modal = new Modal(ensureElement<HTMLElement>(".modal"), {
-  onClose: () => events.emit("modal:close"),
-});
+const modal = new Modal(ensureElement<HTMLElement>(".modal"));
 const success = new Success(cloneTemplate<HTMLElement>("#success"), events);
+const previewCard = new CardPreview(
+  cloneTemplate<HTMLElement>("#card-preview"),
+  {
+    onBuy: () => events.emit("preview:action"),
+  },
+);
 const orderForm = new FormOrder(
   cloneTemplate<HTMLFormElement>("#order"),
   events,
@@ -354,6 +327,7 @@ presenter(
   basket,
   modal,
   success,
+  previewCard,
   orderForm,
   contactsForm,
   events,

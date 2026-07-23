@@ -13,7 +13,7 @@ export class Buyer {
   constructor(private events: IEvents) {}
 
   // Сохранение данных (один или несколько)
-  setData(newData: IBuyer): void {
+  setData(newData: Partial<IBuyer>): void {
     this.data = { ...this.data, ...newData };
 
     this.events.emit("buyer:changed");
